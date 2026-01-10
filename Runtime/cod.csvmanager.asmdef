@@ -2,8 +2,8 @@
     "name": "cod.csvmanager",
     "rootNamespace": "",
     "references": [
-        "cod.dialogbuilder",
-        "com.audioplayer.Editor"
+        "GUID:466ec37cc1db54176ae79be421a2126f",
+        "GUID:c8e885647745d4962b6fcf77f0da4f22"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

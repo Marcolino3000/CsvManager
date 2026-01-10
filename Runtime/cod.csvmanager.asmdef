@@ -1,0 +1,17 @@
+{
+    "name": "cod.csvmanager",
+    "rootNamespace": "",
+    "references": [
+        "GUID:c8e885647745d4962b6fcf77f0da4f22",
+        "GUID:466ec37cc1db54176ae79be421a2126f"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

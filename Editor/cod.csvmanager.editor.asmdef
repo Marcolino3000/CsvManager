@@ -1,0 +1,19 @@
+{
+    "name": "cod.csvmanager.editor",
+    "rootNamespace": "",
+    "references": [
+        "cod.csvmanager",
+        "cod.dialogbuilder"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

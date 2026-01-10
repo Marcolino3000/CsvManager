@@ -124,7 +124,11 @@ namespace DefaultNamespace
                             
                             var audioClip = audioClips.Find(clip => clip.name == formattingInstance.AudioClipName);
                             if (audioClip != null)
+                            {
                                 audioClipManager.AddAudioClip(node, audioClip);
+                                EditorUtility.SetDirty(audioClipManager);
+                            }
+                            
                             else
                             {
                                 Debug.Log("audioclip " + formattingInstance.AudioClipName + " not found");

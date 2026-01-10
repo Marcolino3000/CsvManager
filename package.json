@@ -6,5 +6,10 @@
   "unity": "6000.0",
   "author": {
     "name": "Marc"
+  },
+  "description": "Import and Export of CSV files",
+  "dependencies": {
+    "com.cod.dialog-builder": "0.9.3",
+    "com.cod.audioplayer": "0.0.1"
   }
 }

@@ -46,9 +46,11 @@ namespace DefaultNamespace
                 }
                 
                 string characterName = trees[0].Blackboard.CharacterData.name;
-                string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                // string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                
+                string path = EditorUtility.OpenFolderPanel("Select location for CSV export", "", "");
 
-                using (var writer = new StreamWriter(desktopPath + "/" + $"formatting_{characterName}.csv"))
+                using (var writer = new StreamWriter(path + "/" + $"formatting_{characterName}.csv"))
                 using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
                 {
                     var dialogDataList = TreesToDialogData();

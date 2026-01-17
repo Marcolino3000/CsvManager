@@ -127,8 +127,9 @@ namespace DefaultNamespace
                             var audioClip = audioClips.Find(clip => clip.name == formattingInstance.AudioClipName);
                             if (audioClip != null)
                             {
-                                audioClipManager.AddAudioClip(node, audioClip);
-                                EditorUtility.SetDirty(audioClipManager);
+                                // audioClipManager.AddAudioClip(node, audioClip);
+                                node.AudioClip = audioClip;
+                                EditorUtility.SetDirty(node);
                             }
                             
                             else

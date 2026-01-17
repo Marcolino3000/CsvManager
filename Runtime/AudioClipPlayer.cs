@@ -10,7 +10,6 @@ namespace DefaultNamespace
     {
         [SerializeField] private AudioClipManager clipManager;
         [SerializeField] private AudioSource audioSource;
-        // [SerializeField] private DialogTreeRunner treeRunner;
  
         private List<MarkerManager.Marker> currentClipMarkers = new();
         
@@ -29,25 +28,16 @@ namespace DefaultNamespace
 
         public void PlayClip(Node node)
         {
-            if (!TryAssignAudioClip(node))
+            if(node.AudioClip == null) 
                 return;
+            
+            audioSource.clip = node.AudioClip;
             
             // get markers
             
             audioSource.Play();
         }
-
-        private bool TryAssignAudioClip(Node node)
-        {
-            if (clipManager.NodesToAudioClips.TryGetValue(node, out AudioClip audioClip))
-            {
-                audioSource.clip = audioClip;
-                return true;
-            }
-            
-            Debug.LogWarning("Node does not have an audioClip assigned to it!");
-            return false;
-        }
+        
         
         private void Awake()
         {

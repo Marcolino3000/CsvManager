@@ -106,12 +106,25 @@ namespace Editor
                 int yPos = 100;
 
                 // Create notes
+                var treeToPositions = new Dictionary<DialogTree, Dictionary<string, Vector2>>();
                 foreach (var guid in guidsList)
                 {
                     string path = AssetDatabase.GUIDToAssetPath(guid);
                     var dialogTree = AssetDatabase.LoadAssetAtPath<DialogTree>(path);
                     if (dialogTree == null || dialogTree.nodes == null)
                         continue;
+                    // Load original positions for this tree
+                    var positions = LoadOriginalPositions(path);
+                    treeToPositions[dialogTree] = positions;
+                }
+
+                foreach (var guid in guidsList)
+                {
+                    string path = AssetDatabase.GUIDToAssetPath(guid);
+                    var dialogTree = AssetDatabase.LoadAssetAtPath<DialogTree>(path);
+                    if (dialogTree == null || dialogTree.nodes == null)
+                        continue;
+                    var positions = treeToPositions.TryGetValue(dialogTree, out var posDict) ? posDict : null;
 
                     foreach (var node in dialogTree.nodes)
                     {
@@ -125,10 +138,15 @@ namespace Editor
                         noteConnections[treeKey] = new List<int>();
                         noteConnections[rawKey] = noteConnections[treeKey];
 
-                        // Use node.Position for Scapple position, fallback to grid if (0,0)
+                        // Use original position from JSON if available, else node.Position, else fallback to grid
                         float posX = node.Position.x;
                         float posY = node.Position.y;
-                        if (Mathf.Approximately(posX, 0f) && Mathf.Approximately(posY, 0f))
+                        if (positions != null && positions.TryGetValue(node.Guid, out var origPos))
+                        {
+                            posX = origPos.x;
+                            posY = origPos.y;
+                        }
+                        else if (Mathf.Approximately(posX, 0f) && Mathf.Approximately(posY, 0f))
                         {
                             posX = xPos;
                             posY = yPos;
@@ -332,6 +350,47 @@ namespace Editor
                 index /= 26;
             }
             return s;
+        }
+
+        // Helper: Load original positions from JSON file (if present)
+        private static Dictionary<string, Vector2> LoadOriginalPositions(string dialogTreeAssetPath)
+        {
+            var result = new Dictionary<string, Vector2>();
+            string dir = Path.GetDirectoryName(dialogTreeAssetPath);
+            string name = Path.GetFileNameWithoutExtension(dialogTreeAssetPath);
+            string jsonPath = Path.Combine(dir, name + "_original_positions.json");
+            if (!File.Exists(jsonPath))
+                return result;
+            try
+            {
+                string json = File.ReadAllText(jsonPath);
+                var wrapper = JsonUtility.FromJson<SerializationWrapper>(json);
+                if (wrapper != null && wrapper.positions != null)
+                {
+                    foreach (var entry in wrapper.positions)
+                    {
+                        if (entry.position != null && entry.position.Length == 2)
+                            result[entry.id] = new Vector2(entry.position[0], entry.position[1]);
+                    }
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning($"Failed to load original positions from {jsonPath}: {ex.Message}");
+            }
+            return result;
+        }
+
+        [System.Serializable]
+        private class PositionEntry
+        {
+            public string id;
+            public float[] position;
+        }
+        [System.Serializable]
+        private class SerializationWrapper
+        {
+            public List<PositionEntry> positions;
         }
     }
 }

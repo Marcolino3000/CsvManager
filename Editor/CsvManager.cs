@@ -98,7 +98,7 @@ namespace DefaultNamespace
                 string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 
                 var audioClipManager = GetAudioClipManager();
-                
+
                 Debug.Log(csvPath);
                 // using (var reader = new StreamReader(desktopPath + "/" + "formatting_ExampleCharacter.csv"))
                 var config = new CsvHelper.Configuration.CsvConfiguration(CultureInfo.InvariantCulture)
@@ -118,12 +118,12 @@ namespace DefaultNamespace
                         var obj = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(id);
 
                         var node = (Node)obj;
-                        
+
                         if (node is Node n)
                         {
                             n.DialogLine = formattingInstance.DialogLine;
                             Debug.Log(n.DialogLine);
-                            
+
                             var audioClip = audioClips.Find(clip => clip.name == formattingInstance.AudioClipName);
                             if (audioClip != null)
                             {
@@ -131,7 +131,7 @@ namespace DefaultNamespace
                                 node.AudioClip = audioClip;
                                 EditorUtility.SetDirty(node);
                             }
-                            
+
                             else
                             {
                                 Debug.Log("audioclip " + formattingInstance.AudioClipName + " not found");
@@ -140,7 +140,7 @@ namespace DefaultNamespace
                     }
                 }
             }
-        
+
 
             private AudioClipManager GetAudioClipManager()
             {
@@ -158,7 +158,7 @@ namespace DefaultNamespace
                     string path = AssetDatabase.GUIDToAssetPath(guids[0]);
                     return AssetDatabase.LoadAssetAtPath<AudioClipManager>(path);
                 }
-                
+
                 Debug.LogWarning("Multiple AudioClipManagers found. Plz delete duplicates.");
                 return null;
 #endif

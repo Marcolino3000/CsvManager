@@ -242,6 +242,26 @@ namespace Editor
                 }
             }
 
+            // --- Save original positions to JSON in the same directory as the scap file ---
+            Debug.Log($"[ScappleImporter] notes count: {notes.Count}");
+            var originalPositions = new Dictionary<string, Vector2>();
+            foreach (var noteElem in notes)
+            {
+                var id = noteElem.Attribute("ID")?.Value;
+                var posAttr = noteElem.Attribute("Position")?.Value;
+                Debug.Log($"[ScappleImporter] Note ID: {id}, Position: {posAttr}");
+                if (!string.IsNullOrEmpty(id) && !string.IsNullOrEmpty(posAttr))
+                {
+                    var parts = posAttr.Split(',');
+                    if (parts.Length == 2 && float.TryParse(parts[0], out float x) && float.TryParse(parts[1], out float y))
+                    {
+                        originalPositions[id] = new Vector2(x, y);
+                    }
+                }
+            }
+            Debug.Log($"[ScappleImporter] originalPositions count: {originalPositions.Count}");
+            SaveOriginalNodePositionsInScapDirectory(originalPositions, scapPath);
+
             EditorUtility.SetDirty(dialogTree);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -309,6 +329,83 @@ namespace Editor
                 float rootCenterX = nextRootX + ((width - 1) * horizontalSpacing) / 2f;
                 PositionSubtree(rootId, rootCenterX, startY);
                 nextRootX += width * horizontalSpacing;
+            }
+        }
+
+        /// <summary>
+        /// Saves the original positions of nodes (from Scapple import) to a JSON file for later recall.
+        /// </summary>
+        public static void SaveOriginalNodePositions(Dictionary<string, Vector2> idToPosition, string filePath)
+        {
+            UnityEngine.Debug.Log($"[ScappleImporter] SaveOriginalNodePositions: idToPosition count = {idToPosition?.Count ?? -1}");
+            if (idToPosition != null && idToPosition.Count > 0)
+            {
+                foreach (var kvp in idToPosition)
+                {
+                    UnityEngine.Debug.Log($"[ScappleImporter] id: {kvp.Key}, pos: {kvp.Value}");
+                    break; // Only log the first entry for brevity
+                }
+            }
+            var dict = new Dictionary<string, float[]>();
+            foreach (var kvp in idToPosition)
+            {
+                dict[kvp.Key] = new float[] { kvp.Value.x, kvp.Value.y };
+            }
+            string json = UnityEngine.JsonUtility.ToJson(new SerializationWrapper(dict), true);
+            UnityEngine.Debug.Log($"[ScappleImporter] JSON output: {json}");
+            System.IO.File.WriteAllText(filePath, json);
+        }
+
+        /// <summary>
+        /// Saves the original positions of nodes (from Scapple import) to a JSON file in the same directory as the scap file.
+        /// </summary>
+        public static void SaveOriginalNodePositionsInScapDirectory(Dictionary<string, Vector2> idToPosition, string scapPath)
+        {
+            UnityEngine.Debug.Log($"[ScappleImporter] SaveOriginalNodePositionsInScapDirectory: idToPosition count = {idToPosition?.Count ?? -1}");
+            if (idToPosition != null && idToPosition.Count > 0)
+            {
+                foreach (var kvp in idToPosition)
+                {
+                    UnityEngine.Debug.Log($"[ScappleImporter] id: {kvp.Key}, pos: {kvp.Value}");
+                    break; // Only log the first entry for brevity
+                }
+            }
+            var dict = new Dictionary<string, float[]>();
+            foreach (var kvp in idToPosition)
+            {
+                dict[kvp.Key] = new float[] { kvp.Value.x, kvp.Value.y };
+            }
+            string json = UnityEngine.JsonUtility.ToJson(new SerializationWrapper(dict), true);
+            UnityEngine.Debug.Log($"[ScappleImporter] JSON output: {json}");
+            string directory = Path.GetDirectoryName(scapPath);
+            string scapFileName = Path.GetFileNameWithoutExtension(scapPath);
+            string outFile = Path.Combine(directory, scapFileName + "_original_positions.json");
+            File.WriteAllText(outFile, json);
+        }
+
+        [System.Serializable]
+        private class PositionEntry
+        {
+            public string id;
+            public float[] position;
+            public PositionEntry(string id, float[] position)
+            {
+                this.id = id;
+                this.position = position;
+            }
+        }
+
+        [System.Serializable]
+        private class SerializationWrapper
+        {
+            public List<PositionEntry> positions;
+            public SerializationWrapper(Dictionary<string, float[]> dict)
+            {
+                positions = new List<PositionEntry>();
+                foreach (var kvp in dict)
+                {
+                    positions.Add(new PositionEntry(kvp.Key, kvp.Value));
+                }
             }
         }
 

@@ -217,6 +217,20 @@ namespace Editor
                 }
             }
 
+            // --- Position nodes based on hierarchy ---
+            PositionNodesByHierarchy(rootIds, parentToChildren, noteIdToNode);
+
+            // --- Position nodes using NodePositionHandler ---
+            float rootStartX = 0f;
+            float rootStartY = 0f;
+            float rootSpacing = 200f;
+            NodePositionHandler.AssignPositionsTreeLike(dialogTree);
+            // for (int i = 0; i < dialogTree.StartNodes.Count; i++)
+            // {
+            //     var rootNode = dialogTree.StartNodes[i];
+            //     NodePositionHandler.AssignPositions(rootNode, rootStartX + i * rootSpacing, rootStartY);
+            // }
+
             // Set StartNodes (roots: not referenced as children)
             foreach (var noteElem in notes)
             {
@@ -232,6 +246,70 @@ namespace Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             return dialogTree;
+        }
+
+        /// <summary>
+        /// Positions nodes based on their place in the hierarchy.
+        /// Each node is placed 30px below its parent, and siblings are 100px apart horizontally at the same height.
+        /// </summary>
+        /// <param name="rootIds">IDs of root nodes</param>
+        /// <param name="parentToChildren">Parent-to-children mapping</param>
+        /// <param name="noteIdToNode">Node dictionary</param>
+        public static void PositionNodesByHierarchy(List<string> rootIds, Dictionary<string, List<string>> parentToChildren, Dictionary<string, Node> noteIdToNode)
+        {
+            float startX = 0f;
+            float startY = 0f;
+            float verticalSpacing = 30f;
+            float horizontalSpacing = 100f;
+
+            // First pass: calculate subtree widths
+            Dictionary<string, int> subtreeWidths = new Dictionary<string, int>();
+            int CalculateSubtreeWidth(string nodeId)
+            {
+                if (!parentToChildren.ContainsKey(nodeId) || parentToChildren[nodeId].Count == 0)
+                {
+                    subtreeWidths[nodeId] = 1;
+                    return 1;
+                }
+                int width = 0;
+                foreach (var childId in parentToChildren[nodeId])
+                {
+                    width += CalculateSubtreeWidth(childId);
+                }
+                subtreeWidths[nodeId] = width;
+                return width;
+            }
+            foreach (var rootId in rootIds)
+                CalculateSubtreeWidth(rootId);
+
+            // Second pass: position nodes using subtree widths
+            void PositionSubtree(string nodeId, float x, float y)
+            {
+                if (!noteIdToNode.ContainsKey(nodeId) || noteIdToNode[nodeId] == null)
+                    return;
+                var node = noteIdToNode[nodeId];
+                node.Position = new Vector2(x, y);
+                if (parentToChildren.TryGetValue(nodeId, out var children) && children.Count > 0)
+                {
+                    float totalWidth = subtreeWidths[nodeId];
+                    float childX = x - ((totalWidth - 1) * horizontalSpacing) / 2f;
+                    foreach (var childId in children)
+                    {
+                        float childWidth = subtreeWidths[childId];
+                        float childCenterX = childX + ((childWidth - 1) * horizontalSpacing) / 2f;
+                        PositionSubtree(childId, childCenterX, y - verticalSpacing);
+                        childX += childWidth * horizontalSpacing;
+                    }
+                }
+            }
+            float nextRootX = startX;
+            foreach (var rootId in rootIds)
+            {
+                int width = subtreeWidths[rootId];
+                float rootCenterX = nextRootX + ((width - 1) * horizontalSpacing) / 2f;
+                PositionSubtree(rootId, rootCenterX, startY);
+                nextRootX += width * horizontalSpacing;
+            }
         }
 
         [MenuItem("Assets/DialogBuilder/Import .scap File as DialogTree", true)]

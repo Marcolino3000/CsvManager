@@ -158,7 +158,7 @@ namespace Editor
         /// Positions nodes so that each group of children is centered under its parent.
         /// The middle child (for even numbers, the second, fourth, etc.) is exactly centered under the parent.
         /// </summary>
-        public static void AssignPositionsTreeLike(DialogTree tree, float startX = 0f, float startY = 0f, float verticalSpacing = 120f, float horizontalSpacing = 50f)
+        public static void AssignPositionsTreeLike(DialogTree tree, float startX = 0f, float startY = 0f, float verticalSpacing = 120f, float horizontalSpacing = 250f)
         {
             // Helper: Calculate subtree width for each node
             var subtreeWidths = new Dictionary<Node, int>();

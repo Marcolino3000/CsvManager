@@ -171,37 +171,42 @@ namespace Editor
                     compositeNode.Children.Clear();
             }
 
-            // Second pass: connect nodes using PointsToNoteIDs
+            // Second pass: connect nodes using ConnectedNoteIDs child elements
             foreach (var noteElem in notes)
             {
                 var id = noteElem.Attribute("ID")?.Value?.Trim();
                 if (string.IsNullOrEmpty(id) || !noteIdToNode.ContainsKey(id))
                     continue;
                 var node = noteIdToNode[id];
-                var connectedElem = noteElem.Element("PointsToNoteIDs");
-                if (connectedElem != null)
+                var connectedElems = noteElem.Elements("PointsToNoteIDs");
+
+                foreach (var connectedElem in connectedElems)
                 {
-                    var targets = connectedElem.Value.Split(',');
-                    foreach (var targetIdRaw in targets)
+                    var value = connectedElem.Value;
+                    if (!string.IsNullOrEmpty(value))
                     {
-                        var targetId = targetIdRaw.Trim();
-                        if (string.IsNullOrEmpty(targetId) || targetId == id)
-                            continue; // skip empty or self-connection
-                        if (noteIdToNode.TryGetValue(targetId, out var childNode))
+                        var targets = value.Split(',');
+                        foreach (var targetIdRaw in targets)
                         {
-                            if (node is DialogOptionNode dialogOptionNode && childNode is DialogOptionNode childDialogOption)
+                            var targetId = targetIdRaw.Trim();
+                            if (string.IsNullOrEmpty(targetId) || targetId == id)
+                                continue; // skip empty or self-connection
+                            if (noteIdToNode.TryGetValue(targetId, out var childNode))
                             {
-                                if (!dialogOptionNode.Children.Contains(childDialogOption))
+                                if (node is DialogOptionNode dialogOptionNode && childNode is DialogOptionNode childDialogOption)
                                 {
-                                    dialogOptionNode.Children.Add(childDialogOption);
-                                    referenced.Add(targetId);
-                                    Debug.Log($"Connecting node {id} -> {targetId}");
+                                    if (!dialogOptionNode.Children.Contains(childDialogOption))
+                                    {
+                                        dialogOptionNode.Children.Add(childDialogOption);
+                                        referenced.Add(targetId);
+                                        Debug.Log($"Connecting node {id} -> {targetId}");
+                                    }
                                 }
                             }
-                        }
-                        else if (!string.IsNullOrEmpty(targetId))
-                        {
-                            Debug.LogWarning($"ScappleImporter: Target node ID '{targetId}' not found for connection from '{id}'.");
+                            else if (!string.IsNullOrEmpty(targetId))
+                            {
+                                Debug.LogWarning($"ScappleImporter: Target node ID '{targetId}' not found for connection from '{id}'.");
+                            }
                         }
                     }
                 }
@@ -216,15 +221,10 @@ namespace Editor
                     Debug.Log($"[ScappleImporter] Node {kvp.Key} (instanceID={node.GetInstanceID()}) has children: [{childIds}]");
                 }
             }
-
-            // --- Position nodes based on hierarchy ---
-            PositionNodesByHierarchy(rootIds, parentToChildren, noteIdToNode);
-
-            // --- Position nodes using NodePositionHandler ---
-            float rootStartX = 0f;
-            float rootStartY = 0f;
-            float rootSpacing = 200f;
+            
             NodePositionHandler.AssignPositionsTreeLike(dialogTree);
+            
+            
             // for (int i = 0; i < dialogTree.StartNodes.Count; i++)
             // {
             //     var rootNode = dialogTree.StartNodes[i];

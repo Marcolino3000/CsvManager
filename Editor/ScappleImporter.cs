@@ -221,10 +221,8 @@ namespace Editor
                     Debug.Log($"[ScappleImporter] Node {kvp.Key} (instanceID={node.GetInstanceID()}) has children: [{childIds}]");
                 }
             }
-            
-            NodePositionHandler.AssignPositionsTreeLike(dialogTree);
-            
-            
+
+
             // for (int i = 0; i < dialogTree.StartNodes.Count; i++)
             // {
             //     var rootNode = dialogTree.StartNodes[i];
@@ -238,10 +236,19 @@ namespace Editor
                 if (!referenced.Contains(id))
                 {
                     if (noteIdToNode[id] is DialogOptionNode rootNode)
-                        dialogTree.StartNodes.Add(rootNode);
+                    {
+                        if(rootNode.Children.Count > 0)
+                            dialogTree.StartNodes.Add(rootNode);
+                    }
                 }
             }
 
+            if (dialogTree.StartNodes.Count > 1)
+            {
+                Debug.LogWarning(dialogTree.name + "does have multiple start nodes.");
+            }
+            
+            NodePositionHandler.AssignPositionsTreeLikeNew(dialogTree);
             // --- Save original positions to JSON in the same directory as the scap file ---
             Debug.Log($"[ScappleImporter] notes count: {notes.Count}");
             var originalPositions = new Dictionary<string, Vector2>();

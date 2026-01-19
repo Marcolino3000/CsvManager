@@ -229,5 +229,46 @@ namespace Editor
             }
         }
 
+        public static void AssignPositionsTreeLikeNew(DialogTree tree, float startX = 0f, float startY = 0f, float horizontalSpacing = 300f, float verticalSpacing = 140f)
+        {
+            var nodesToLevels = new Dictionary<int, List<Node>>();
+            
+            GetNodeLevels(tree.StartNodes[0], nodesToLevels, 0);
+
+            foreach (var level in nodesToLevels.Keys)
+            {
+                float y = level * verticalSpacing;
+                float x = 0;
+                    
+                float totalWidth = (nodesToLevels[level].Count - 1) * horizontalSpacing;
+                float leftX = x - totalWidth / 2f;
+                
+                for(int i = 0; i < nodesToLevels[level].Count; i++)
+                {
+                    x = leftX + i * horizontalSpacing;
+                    var node = nodesToLevels[level][i];
+                    node.Position = new Vector2(x, y);    
+                }
+            }
+         
+        }
+
+        private static void GetNodeLevels(Node node, Dictionary<int, List<Node>> nodesToLevels, int i)
+        {
+            if (!nodesToLevels.ContainsKey(i))
+            {
+                nodesToLevels[i] = new List<Node>();
+            }
+
+            if (node is CompositeNode composite && composite.Children != null)
+            {
+                foreach (var child in composite.Children)
+                {
+                    if(!nodesToLevels[i].Contains(child))
+                        nodesToLevels[i].Add(child);
+                    GetNodeLevels(child, nodesToLevels, i + 1);
+                }
+            }
+        }
     }
 }

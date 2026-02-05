@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using Editor.AudioEditor;
 using Nodes;
 using Tree;
 using UnityEngine;
@@ -11,7 +9,7 @@ namespace DefaultNamespace
         [SerializeField] private AudioClipManager clipManager;
         [SerializeField] private AudioSource audioSource;
  
-        private List<MarkerManager.Marker> currentClipMarkers = new();
+        // private List<MarkerManager.Marker> currentClipMarkers = new();
         
         private void Update()
         {
